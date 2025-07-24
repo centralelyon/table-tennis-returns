@@ -32,34 +32,14 @@ The analysis is based on a database provided by LIRIS, containing in particular:
     - **Pressure**: an indicator measuring the pressure felt at each point (score gap, key moments, end of set, decisive set),
     - Graphical display of the evolution of these indicators throughout the match.
 
-### 3. Robustness and Convergence of Results
+### 3. Analysis of Return Shot Types Distribution
 
-- **Notebook `3_gather_results.ipynb`**  
-  Repeat chi-squared tests many times to eliminate the effect of random cluster initialization (k-means).  
-  Analyze the convergence of p-values and the robustness of the results.
-
-### 4. Descriptive Statistics on Returns
-
-- **Notebook `4_statistiques.ipynb`**  
-  Calculate and visualize:
-    - The percentages of flips, topspins, pushes, and blocks on return,
-    - The attack/defense/intermediate distributions,
-    - The number of data points available per player.
-
-### 5. Multi-Match Comparative Analysis
-
-- **Notebook `5_matchs_lebrun.ipynb`**  
-  Compare Alexis Lebrun's return strategies across several matches, studying the dependence between the received serve zone and the chosen return zone.
-
-### 6. Dependence Between Return and Set Number
-
-- **Notebook `6_dependance_num_set.ipynb`**  
-  Analyze whether the return zone varies according to the set number, for different players.
-
-### 7. Study of the Third Shot After the Return
-
-- **Notebook `7_etude_3eme_coup.ipynb`**  
-  Analyze the relationship between the chosen return zone and the success of the third shot (point won by the opponent).
+- **Notebook `3_return_type_analysis.ipynb`**  
+  Statistical analysis of service return styles:
+    - Distribution of different return types (topspin, flip, push shot, block) by player,
+    - Visual representation using stacked horizontal bars,
+    - Ranking of players based on their offensive return tendency (topspin rate),
+    - Comparative analysis of playing styles and tactical preferences in service returns.
 
 ---
 
@@ -112,11 +92,27 @@ Another indicator measures the **pressure** felt by a player at each point, comb
 1. Clone this GitHub repository:
 
    ```bash
-   git clone https://github.com/centralelyon/tt-returns.git
-   cd tt-returns
+   git clone https://github.com/centralelyon/table-tennis-returns
+   cd table-tennis-returns
    ```
 
-2. Install the required dependencies:
+2. Install LaTeX dependencies (required for figures):
+
+   - Windows:
+     - Install [MiKTeX](https://miktex.org/download)
+   - Linux (Ubuntu/Debian):
+
+     ```bash
+     sudo apt-get install texlive texlive-latex-extra dvipng
+     ```
+
+   - macOS:
+
+     ```bash
+     brew install texlive dvipng
+     ```
+
+3. Install Python dependencies:
 
    ```bash
    pip install -r requirements.txt
