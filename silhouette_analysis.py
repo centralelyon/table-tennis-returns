@@ -234,12 +234,10 @@ def main():
     FROM Liste_des_coups
     WHERE coor_balle_x IS NOT NULL 
       AND coor_balle_y IS NOT NULL
-      AND num_coup = 2
-      AND (joueur_frappe = "FELIX-LEBRUN" OR joueur_frappe = "ALEXIS-LEBRUN" OR joueur_frappe = "FAN-ZHENDONG")
     """
 
     df = pd.read_sql_query(query, conn)
-    analyze_silhouette("Tous les retours de service", df, z_threshold=3.0)
+    analyze_silhouette("Tous les retours de service", df, z_threshold=2.5)
 
     conn.close()
 
