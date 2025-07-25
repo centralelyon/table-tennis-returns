@@ -22,7 +22,7 @@ chemin_dossier_parent = os.path.abspath(os.path.join(os.getcwd(), ".."))
 sys.path.append(chemin_dossier_parent)
 
 
-def analyze_clusters(name, df, z_threshold=3.0):
+def analyze_clusters(name, df, z_threshold=3.0, sensitivity=1.0):
     """Analyse les clusters optimaux pour un ensemble de points en excluant d'abord les outliers."""
     # 1) Conversion et suppression des NaN
     points = df.astype(float).to_numpy()
@@ -39,20 +39,29 @@ def analyze_clusters(name, df, z_threshold=3.0):
             points[i, 0] *= -1
             points[i, 1] *= -1
 
-    # 3) Normalisation
-    scaler = StandardScaler()
-    points_scaled_full = scaler.fit_transform(points)
+    # 3) Première normalisation pour la détection des outliers
+    scaler_outliers = StandardScaler()
+    points_scaled_for_outliers = scaler_outliers.fit_transform(points)
 
     # 4) Exclusion des outliers par Z‑score (|z| > z_threshold)
-    mask_inliers = np.all(np.abs(points_scaled_full) <= z_threshold, axis=1)
-    points = points[mask_inliers]
-    points_scaled = points_scaled_full[mask_inliers]
+    mask_inliers = np.all(
+        np.abs(points_scaled_for_outliers) <= z_threshold, axis=1
+    )
+    points_clean = points[mask_inliers]
 
     print(
-        f"Points initiaux : {mask_inliers.size}, points après exclusion outliers : {len(points)}"
+        f"Points initiaux : {len(points)}, points après exclusion outliers : {len(points_clean)}"
     )
 
-    # 5) Calcul des inerties pour k=1..6
+    if len(points_clean) == 0:
+        print("Aucun point restant après exclusion des outliers")
+        return
+
+    # 5) Normalisation finale sur les données nettoyées
+    scaler_final = StandardScaler()
+    points_scaled = scaler_final.fit_transform(points_clean)
+
+    # 6) Calcul des inerties
     k_range = list(range(1, 11))
     inertias = []
     for k in k_range:
@@ -60,8 +69,15 @@ def analyze_clusters(name, df, z_threshold=3.0):
         km.fit(points_scaled)
         inertias.append(km.inertia_)
 
-    # 6) Détection du coude via kneed
-    kl = KneeLocator(k_range, inertias, curve="convex", direction="decreasing")
+    # 7) Détection du coude via kneed avec paramètres ajustables
+    kl = KneeLocator(
+        k_range,
+        inertias,
+        curve="convex",
+        direction="decreasing",
+        S=sensitivity,
+        interp_method="polynomial",
+    )
     elbow_point = (
         kl.knee
         or k_range[
@@ -89,7 +105,7 @@ def analyze_clusters(name, df, z_threshold=3.0):
 
     print(f"\nAnalyse pour {name}:")
     print(f"Nombre optimal de clusters suggéré : {elbow_point}")
-    print(f"Nombre total de points utilisés : {len(points)}")
+    print(f"Nombre total de points utilisés : {len(points_clean)}")
 
     # 9) Clustering final et visualisation
     optimal_kmeans = KMeans(n_clusters=elbow_point, random_state=42, n_init=10)
@@ -97,7 +113,7 @@ def analyze_clusters(name, df, z_threshold=3.0):
 
     plt.figure(figsize=(10, 6))
     scatter = plt.scatter(
-        points[:, 0], points[:, 1], c=clusters, cmap="viridis"
+        points_clean[:, 0], points_clean[:, 1], c=clusters, cmap="viridis"
     )
     plt.colorbar(scatter, label="Cluster")
     plt.xlabel("Coordonnée X")
@@ -112,7 +128,7 @@ def analyze_clusters(name, df, z_threshold=3.0):
     # 10) Statistiques des clusters
     print("\nStatistiques des clusters:")
     for i in range(elbow_point):
-        cluster_pts = points[clusters == i]
+        cluster_pts = points_clean[clusters == i]
         print(f"\nCluster {i+1}:")
         print(f"  Nombre de points : {len(cluster_pts)}")
         print(
@@ -133,11 +149,10 @@ def main():
     FROM Liste_des_coups
     WHERE coor_balle_x IS NOT NULL 
       AND coor_balle_y IS NOT NULL
-      AND num_coup = 2
     """
 
     df = pd.read_sql_query(query, conn)
-    analyze_clusters("Tous les retours de service", df, z_threshold=3.0)
+    analyze_clusters("Tous les retours de service", df, z_threshold=2.5)
 
     conn.close()
 
