@@ -41,6 +41,15 @@ The analysis is based on a database provided by LIRIS, containing in particular:
     - Ranking of players based on their offensive return tendency (topspin rate),
     - Comparative analysis of playing styles and tactical preferences in service returns.
 
+### 4. Cluster Analysis using Elbow Method
+
+- **Notebook `4_elbow_method.ipynb`**  
+  Advanced clustering analysis of service returns:
+    - Implementation of the elbow method to determine optimal number of clusters,
+    - Outlier detection and removal using z-score standardization,
+    - Visualization of clustering results,
+    - Statistical analysis of cluster characteristics (centers, standard deviations),
+
 ---
 
 ## Dash Application
